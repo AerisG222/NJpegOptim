@@ -1,0 +1,29 @@
+language: csharp
+
+addons:
+  apt:
+    packages:
+      - jpegoptim
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      dotnet: 2.0.0
+      mono: none
+      env: CONFIGURATION=Debug DOTNETCORE=1
+    - os: linux
+      dist: trusty
+      sudo: required
+      dotnet: 2.0.0
+      mono: none
+      env: CONFIGURATION=Release DOTNETCORE=1
+
+script:
+  - dotnet restore
+  - cd src/NJpegOptim
+  - dotnet build -c $CONFIGURATION
+  - cd ../../test/NJpegOptim.Tests
+  - dotnet build -c $CONFIGURATION
+  - dotnet test -c $CONFIGURATION
