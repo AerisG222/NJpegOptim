@@ -1,7 +1,7 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AerisG222/NJpegOptim/blob/master/LICENSE.md)
 [![NuGet](https://buildstats.info/nuget/NJpegOptim)](https://www.nuget.org/packages/NJpegOptim/)
 [![Travis](https://img.shields.io/travis/AerisG222/NJpegOptim.svg)](https://travis-ci.org/AerisG222/NJpegOptim)
-[![Coverity Scan](https://img.shields.io/coverity/scan/xxxx.svg)](https://scan.coverity.com/projects/aerisg222-njpegoptim)
+[![Coverity Scan](https://img.shields.io/coverity/scan/14029.svg)](https://scan.coverity.com/projects/aerisg222-njpegoptim)
 
 # NJpegOptim
 
