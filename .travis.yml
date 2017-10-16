@@ -26,4 +26,4 @@ script:
   - dotnet build -c $CONFIGURATION
   - cd ../../test/NJpegOptim.Tests
   - dotnet build -c $CONFIGURATION
-  - dotnet test -c $CONFIGURATION
+#  - dotnet test -c $CONFIGURATION
