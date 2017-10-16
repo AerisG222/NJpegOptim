@@ -13,7 +13,7 @@ please look at the option to set the destination folder.
 To create a simple wrapper to allow .Net applications to easily use this program.
 
 ## Using
-- Install jpegoptim
+- Install jpegoptim (v1.3.1 or greater)
 - Add a package reference to NJpegOptim in your project
 - Bring down the packages for your project via `dotnet restore`
 
