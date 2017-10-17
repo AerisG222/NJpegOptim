@@ -19,7 +19,7 @@ namespace NJpegOptim
         
         public JpegOptim(Options options)
         {
-            Options = options;
+            Options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
 
