@@ -2,9 +2,9 @@
   <PropertyGroup>
     <Description>.Net wrapper for jpegoptim</Description>
     <AssemblyTitle>NJpegOptim</AssemblyTitle>
-    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionPrefix>0.1.1</VersionPrefix>
     <Authors>Mike Morano &lt;mmorano@mikeandwan.us&gt;</Authors>
-    <TargetFrameworks>netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net461</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <AssemblyName>NJpegOptim</AssemblyName>
@@ -13,7 +13,16 @@
     <PackageProjectUrl>https://github.com/AerisG222/NJpegOptim</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/AerisG222/NJpegOptim/blob/master/LICENSE.md</PackageLicenseUrl>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="MedallionShell" Version="1.5.0" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <FrameworkPathOverride>$(NuGetPackageRoot)microsoft.targetingpack.netframework.v4.6.1\1.0.1\lib\net461\</FrameworkPathOverride>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <PackageReference Include="Microsoft.TargetingPack.NETFramework.v4.6.1" Version="1.0.1" ExcludeAssets="All" PrivateAssets="All" />
   </ItemGroup>
 </Project>

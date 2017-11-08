@@ -15,8 +15,8 @@ namespace NJpegOptim
 
 
         public Options Options { get; private set; }
-        
-        
+
+
         public JpegOptim(Options options)
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
@@ -32,7 +32,7 @@ namespace NJpegOptim
 
             var args = Options.GetArguments(srcPath);
 
-            var results = await RunProcessAsync(args, null);
+            var results = await RunProcessAsync(args, null).ConfigureAwait(false);
 
             return results[0];
         }
@@ -60,7 +60,7 @@ namespace NJpegOptim
 
             var args = Options.GetArguments(infile);
 
-            var results = await RunProcessAsync(args, infile);
+            var results = await RunProcessAsync(args, infile).ConfigureAwait(false);
 
             return results[0];
         }
@@ -91,7 +91,7 @@ namespace NJpegOptim
                     cmd = Command.Run(Options.JpegOptimPath, args) < infile > ms;
                 }
 
-                await cmd.Task;
+                await cmd.Task.ConfigureAwait(false);
 
                 if(ms != null)
                 {
