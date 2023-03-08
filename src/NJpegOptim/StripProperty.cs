@@ -1,17 +1,16 @@
 using System;
 
-namespace NJpegOptim
+namespace NJpegOptim;
+
+[Flags]
+public enum StripProperty
 {
-    [Flags]
-    public enum StripProperty
-    {
-        NotSpecified = 0,
-        All,
-        None,
-        Comments,
-        Exif,
-        Iptc,
-        Icc,
-        Xmp
-    }
+    NotSpecified = 0,
+    All,
+    None,
+    Comments,
+    Exif,
+    Iptc,
+    Icc,
+    Xmp
 }

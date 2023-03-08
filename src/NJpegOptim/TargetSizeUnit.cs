@@ -1,9 +1,8 @@
-namespace NJpegOptim
+namespace NJpegOptim;
+
+public enum TargetSizeUnit
 {
-    public enum TargetSizeUnit
-    {
-        NotSpecified = 0,
-        Kilobytes,
-        Percent
-    }
+    NotSpecified = 0,
+    Kilobytes,
+    Percent
 }

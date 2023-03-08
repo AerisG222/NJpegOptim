@@ -1,9 +1,8 @@
-namespace NJpegOptim
+namespace NJpegOptim;
+
+public enum ProgressiveMode
 {
-    public enum ProgressiveMode
-    {
-        NotSpecified = 0,
-        ForceProgressive,
-        ForceNormal
-    }
+    NotSpecified = 0,
+    ForceProgressive,
+    ForceNormal
 }
