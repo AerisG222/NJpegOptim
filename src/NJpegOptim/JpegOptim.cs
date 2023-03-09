@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Medallion.Shell;
 
 namespace NJpegOptim;
 
@@ -12,25 +12,34 @@ public class JpegOptim
 {
     const int NUM_OUTPUT_FIELDS = 8;
 
-    public Options Options { get; private set; }
+    readonly Options _options;
 
     public JpegOptim(Options options)
     {
-        Options = options ?? throw new ArgumentNullException(nameof(options));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public async Task<Result> RunAsync(string srcPath)
+    public Task<Result> RunAsync(string srcPath)
     {
-        if(!File.Exists(srcPath))
-        {
-            throw new FileNotFoundException("Please make sure the image exists.", srcPath);
-        }
+        ValidateSourceFile(srcPath);
 
-        var args = Options.GetArguments(srcPath);
+        return InternalRunAsync(srcPath, null, null);
+    }
 
-        var results = await RunProcessAsync(args, null).ConfigureAwait(false);
+    public Task<Result> RunAsync(string srcPath, Stream dstStream)
+    {
+        ValidateSourceFile(srcPath);
+        ValidateDestinationStream(dstStream);
 
-        return results[0];
+        return InternalRunAsync(srcPath, null, dstStream);
+    }
+
+    public Task<Result> RunAsync(Stream srcStream, Stream dstStream)
+    {
+        ValidateSourceStream(srcStream);
+        ValidateDestinationStream(dstStream);
+
+        return InternalRunAsync(null, srcStream, dstStream);
     }
 
     public Task<IList<Result>> RunAsync(string[] srcFiles)
@@ -40,69 +49,102 @@ public class JpegOptim
             throw new Exception("No files specified to process.");
         }
 
-        var args = Options.GetArguments(srcFiles);
+        var args = _options.GetArguments(srcFiles);
 
-        return RunProcessAsync(args, null);
+        return RunProcessAsync(args, null, null);
     }
 
-    public async Task<Result> RunAsync(Stream infile)
+    async Task<Result> InternalRunAsync(string srcPath, Stream srcStream, Stream dstStream)
     {
-        if(infile == null)
-        {
-            throw new ArgumentNullException(nameof(infile));
-        }
+        var args = _options.GetArguments(srcPath, dstStream != null);
 
-        var args = Options.GetArguments(infile);
-
-        var results = await RunProcessAsync(args, infile).ConfigureAwait(false);
+        var results = await RunProcessAsync(args, srcStream, dstStream).ConfigureAwait(false);
 
         return results[0];
     }
 
-    async Task<IList<Result>> RunProcessAsync(string[] args, Stream infile)
+    async Task<IList<Result>> RunProcessAsync(string[] args, Stream srcStream, Stream dstStream)
     {
-        Command cmd = null;
-        MemoryStream ms = null;
+        using var process = new Process();
+
+        process.StartInfo.FileName = _options.JpegOptimPath;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.StandardInputEncoding = Console.InputEncoding;
+        process.StartInfo.StandardErrorEncoding = Console.OutputEncoding;
+        process.StartInfo.StandardOutputEncoding = Console.OutputEncoding;
+        process.StartInfo.RedirectStandardInput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.RedirectStandardOutput = true;
+
+        foreach(var arg in args)
+        {
+            process.StartInfo.ArgumentList.Add(arg);
+        }
 
         try
         {
-            if(infile == null)
+            StringBuilder stdOut = null;
+
+            process.Start();
+
+            if(srcStream != null)
             {
-                if(Options.OutputToStream)
-                {
-                    ms = new MemoryStream();
-                    cmd = Command.Run(Options.JpegOptimPath, args) > ms;
-                }
-                else
-                {
-                    cmd = Command.Run(Options.JpegOptimPath, args);
-                }
+                await srcStream.CopyToAsync(process.StandardInput.BaseStream).ConfigureAwait(false);
+                await process.StandardInput.FlushAsync().ConfigureAwait(false);
+                process.StandardInput.Close();
+            }
+
+            var stdErr = new StringBuilder();
+            process.ErrorDataReceived += (sender, e) => RecordMeaningfulOutput(e.Data, stdErr);
+            process.BeginErrorReadLine();
+
+            if(dstStream == null)
+            {
+                stdOut = new StringBuilder();
+                process.OutputDataReceived += (sender, e) => RecordMeaningfulOutput(e.Data, stdOut);
+                process.BeginOutputReadLine();
             }
             else
             {
-                ms = new MemoryStream();
-                cmd = Command.Run(Options.JpegOptimPath, args) < infile > ms;
+                await process.StandardOutput.BaseStream.CopyToAsync(dstStream).ConfigureAwait(false);
+                await process.StandardOutput.BaseStream.FlushAsync().ConfigureAwait(false);
+                process.StandardOutput.Close();
             }
 
-            await cmd.Task.ConfigureAwait(false);
+            await process.WaitForExitAsync().ConfigureAwait(false);
 
-            if(ms != null)
+            if(dstStream == null)
             {
-                ms.Seek(0, SeekOrigin.Begin);
-
-                var result = ParseOutput(cmd.StandardError.GetLines());
-                result[0].OutputStream = ms;
-
-                return result;
+                return ParseOutput(GetLines(stdOut.ToString()));
             }
             else
             {
-                return ParseOutput(cmd.StandardOutput.GetLines());
+                return ParseOutput(GetLines(stdErr.ToString()));
             }
         }
         catch (Win32Exception ex)
         {
             throw new Exception("Error when trying to start the jpegoptim process.  Please make sure it is installed, and its path is properly specified in the options.", ex);
+        }
+    }
+
+    void RecordMeaningfulOutput(string output, StringBuilder buffer)
+    {
+        if(!string.IsNullOrWhiteSpace(output))
+        {
+            buffer.AppendLine(output);
+        }
+    }
+
+    IEnumerable<string> GetLines(string input)
+    {
+        string line;
+        var reader = new StringReader(input);
+
+        while((line = reader.ReadLine()) != null)
+        {
+            yield return line;
         }
     }
 
@@ -139,6 +181,40 @@ public class JpegOptim
         }
 
         return results;
+    }
+
+    void ValidateSourceFile(string srcPath)
+    {
+        if(!File.Exists(srcPath))
+        {
+            throw new FileNotFoundException("Please make sure the image exists.", srcPath);
+        }
+    }
+
+    void ValidateSourceStream(Stream sourceStream)
+    {
+        if(sourceStream == null)
+        {
+            throw new ArgumentNullException(nameof(sourceStream));
+        }
+
+        if(!sourceStream.CanRead)
+        {
+            throw new InvalidOperationException("Unable to read from source stream!");
+        }
+    }
+
+    void ValidateDestinationStream(Stream dstStream)
+    {
+        if(dstStream == null)
+        {
+            throw new ArgumentNullException(nameof(dstStream));
+        }
+
+        if(!dstStream.CanWrite)
+        {
+            throw new InvalidOperationException("Unable to write to destination stream!");
+        }
     }
 
     // jpegoptim does not seem to escape commas, so we rebuild the file name here in the case of commas

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace NJpegOptim;
 
@@ -19,36 +18,38 @@ public class Options
     public bool PreservePermissions { get; set; }
     public StripProperty StripProperties { get; set; }
     public ProgressiveMode ProgressiveMode { get; set; }
-    public bool OutputToStream { get; set; }
 
-    public string[] GetArguments(string filename)
+    public string[] GetArguments(string sourceFile, bool outputToStream)
     {
-        var args = GetOptions();
+        var args = GetArgs();
 
-        args.Add(filename);
+        if(string.IsNullOrWhiteSpace(sourceFile))
+        {
+            args.Add("--stdin");
+        }
+        else
+        {
+            args.Add(sourceFile);
+        }
+
+        if(outputToStream)
+        {
+            args.Add("--stdout");
+        }
 
         return args.ToArray();
     }
 
     public string[] GetArguments(string[] filenames)
     {
-        var args = GetOptions();
+        var args = GetArgs();
 
         args.AddRange(filenames);
 
         return args.ToArray();
     }
 
-    public string[] GetArguments(Stream infile)
-    {
-        var args = GetOptions();
-
-        args.Add("--stdin");
-
-        return args.ToArray();
-    }
-
-    List<string> GetOptions()
+    List<string> GetArgs()
     {
         var args = new List<string>();
 
@@ -162,11 +163,6 @@ public class Options
             {
                 args.Add("--all-progressive");
             }
-        }
-
-        if(OutputToStream)
-        {
-            args.Add("--stdout");
         }
 
         return args;

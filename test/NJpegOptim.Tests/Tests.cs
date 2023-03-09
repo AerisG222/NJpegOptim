@@ -106,7 +106,7 @@ public class Tests
             ProgressiveMode = ProgressiveMode.ForceNormal
         };
 
-        var args = opts.GetArguments("dummy.jpg");
+        var args = opts.GetArguments("dummy.jpg", false);
 
         var argLine = string.Join(" ", args);
 
@@ -125,8 +125,9 @@ public class Tests
     }
 
     [Fact]
-    async void StandardInputTest()
+    async void FileToStreamTest()
     {
+        var filename = "filetostream.jpg";
         var opts = new Options {
             MaxQuality = 72,
             StripProperties = StripProperty.All
@@ -134,20 +135,69 @@ public class Tests
 
         var jo = new JpegOptim(opts);
 
-        var f = new FileStream(Files[0], FileMode.Open, FileAccess.Read, FileShare.Read);
+        if(File.Exists(filename))
+        {
+            File.Delete(filename);
+        }
 
-        var result = await jo.RunAsync(f);
+        var f = new FileStream(filename, FileMode.Create);
+
+        var result = await jo.RunAsync(Files[0], f);
+
+        await f.FlushAsync();
+        f.Close();
 
         Assert.NotNull(result);
-        Assert.NotNull(result.OutputStream);
-        Assert.Equal("stdin", result.SourceFile);
-        Assert.Equal(91324, result.OptimizedSize);
+        Assert.True(File.Exists(filename));
+    }
 
-        /*
-        var fs = new FileStream("stream_test.jpg", FileMode.Create);
-        result.OutputStream.CopyTo(fs);
-        await fs.FlushAsync();
-        fs.Close();
-        */
+    [Fact]
+    async void StreamToStreamTest()
+    {
+        var filename = "streamtostream.jpg";
+        var opts = new Options {
+            MaxQuality = 72,
+            StripProperties = StripProperty.All
+        };
+
+        var jo = new JpegOptim(opts);
+
+        if(File.Exists(filename))
+        {
+            File.Delete(filename);
+        }
+
+        var src = new FileStream(Files[0], FileMode.Open, FileAccess.Read, FileShare.Read);
+        var dst = new FileStream(filename, FileMode.Create);
+
+        var result = await jo.RunAsync(src, dst);
+
+        await dst.FlushAsync();
+        dst.Close();
+
+        Assert.NotNull(result);
+        Assert.True(File.Exists(filename));
+    }
+
+    [Fact]
+    async void InplaceTest()
+    {
+        var filename = "inplace.jpg";
+        var opts = new Options {
+            MaxQuality = 72,
+            StripProperties = StripProperty.All
+        };
+
+        File.Copy(Files[0], filename, true);
+        var origSize = new FileInfo(filename).Length;
+
+        var jo = new JpegOptim(opts);
+
+        var result = await jo.RunAsync(filename);
+        var newSize = new FileInfo(filename).Length;
+
+        Assert.NotNull(result);
+        Assert.True(File.Exists(filename));
+        Assert.True(newSize < origSize);
     }
 }

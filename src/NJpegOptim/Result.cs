@@ -1,10 +1,7 @@
-using System.IO;
-
 namespace NJpegOptim;
 
 public class Result
 {
-    public Stream OutputStream { get; set; }
     public bool Success { get; set; }
     public string ErrorLine { get; set; }
     public string SourceFile { get; set; }
