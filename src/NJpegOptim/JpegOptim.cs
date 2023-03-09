@@ -26,12 +26,40 @@ public class JpegOptim
         return InternalRunAsync(srcPath, null, null);
     }
 
+    public async Task<Result> RunAsync(string srcPath, string dstPath)
+    {
+        ValidateSourceFile(srcPath);
+
+        using var dst = new FileStream(dstPath, FileMode.OpenOrCreate);
+
+        var result = await InternalRunAsync(srcPath, null, dst).ConfigureAwait(false);
+
+        await dst.FlushAsync().ConfigureAwait(false);
+        dst.Close();
+
+        return result;
+    }
+
     public Task<Result> RunAsync(string srcPath, Stream dstStream)
     {
         ValidateSourceFile(srcPath);
         ValidateDestinationStream(dstStream);
 
         return InternalRunAsync(srcPath, null, dstStream);
+    }
+
+    public async Task<Result> RunAsync(Stream srcStream, string dstPath)
+    {
+        ValidateSourceStream(srcStream);
+
+        using var dst = new FileStream(dstPath, FileMode.OpenOrCreate);
+
+        var result = await InternalRunAsync(null, srcStream, dst).ConfigureAwait(false);
+
+        await dst.FlushAsync().ConfigureAwait(false);
+        dst.Close();
+
+        return result;
     }
 
     public Task<Result> RunAsync(Stream srcStream, Stream dstStream)

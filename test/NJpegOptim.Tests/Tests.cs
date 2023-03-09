@@ -125,6 +125,23 @@ public class Tests
     }
 
     [Fact]
+    async void FileToFileTest()
+    {
+        var filename = "filetofile.jpg";
+        var opts = new Options {
+            MaxQuality = 72,
+            StripProperties = StripProperty.All
+        };
+
+        var jo = new JpegOptim(opts);
+
+        var result = await jo.RunAsync(Files[0], filename);
+
+        Assert.NotNull(result);
+        Assert.True(File.Exists(filename));
+    }
+
+    [Fact]
     async void FileToStreamTest()
     {
         var filename = "filetostream.jpg";
@@ -146,6 +163,25 @@ public class Tests
 
         await f.FlushAsync();
         f.Close();
+
+        Assert.NotNull(result);
+        Assert.True(File.Exists(filename));
+    }
+
+    [Fact]
+    async void StreamToFileTest()
+    {
+        var filename = "streamtofile.jpg";
+        var opts = new Options {
+            MaxQuality = 72,
+            StripProperties = StripProperty.All
+        };
+
+        var jo = new JpegOptim(opts);
+
+        var src = new FileStream(Files[0], FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        var result = await jo.RunAsync(src, filename);
 
         Assert.NotNull(result);
         Assert.True(File.Exists(filename));
