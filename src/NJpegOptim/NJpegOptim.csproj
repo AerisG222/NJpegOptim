@@ -1,16 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Description>.Net wrapper for jpegoptim</Description>
-    <AssemblyTitle>NJpegOptim</AssemblyTitle>
-    <VersionPrefix>0.2.0</VersionPrefix>
-    <Authors>Mike Morano &lt;mmorano@mikeandwan.us&gt;</Authors>
-    <TargetFrameworks>net6.0</TargetFrameworks>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DebugType>portable</DebugType>
-    <AssemblyName>NJpegOptim</AssemblyName>
-    <PackageId>NJpegOptim</PackageId>
-    <PackageTags>jpeg;jpegoptim;optimize;minify;shrink</PackageTags>
-    <PackageProjectUrl>https://github.com/AerisG222/NJpegOptim</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/AerisG222/NJpegOptim/blob/master/LICENSE.md</PackageLicenseUrl>
-  </PropertyGroup>
+    <PropertyGroup>
+        <Description>.Net wrapper for jpegoptim</Description>
+        <AssemblyTitle>NJpegOptim</AssemblyTitle>
+        <VersionPrefix>0.2.0</VersionPrefix>
+        <Authors>Mike Morano &lt;mmorano@mikeandwan.us&gt;</Authors>
+        <TargetFrameworks>net6.0</TargetFrameworks>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <DebugType>portable</DebugType>
+        <AssemblyName>NJpegOptim</AssemblyName>
+        <PackageId>NJpegOptim</PackageId>
+        <PackageTags>jpeg;jpegoptim;optimize;minify;shrink</PackageTags>
+        <PackageProjectUrl>https://github.com/AerisG222/NJpegOptim</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 </Project>
